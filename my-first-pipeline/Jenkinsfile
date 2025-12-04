@@ -1,12 +1,24 @@
 pipeline {
-  agent {
-    docker { image 'node:16-alpine' }
-  }
-  stages {
-    stage('Test') {
-      steps {
-        sh 'node --version'
-      }
+    agent any
+
+    stages {
+
+        stage('Pull Code') {
+            steps {
+                git branch: 'main', url: 'https://github.com/Akshitha-nutalapati/Ecocycle.git'
+            }
+        }
+
+        stage('Deploy to EC2') {
+            steps {
+                sshagent(['app-server-key']) {
+                    sh '''
+                    ssh -o StrictHostKeyChecking=no ubuntu@13.204.46.42 "sudo rm -rf /var/www/html/*"
+                    scp -o StrictHostKeyChecking=no -r * ubuntu@13.204.46.42:/var/www/html/
+                    '''
+                }
+            }
+        }
+
     }
-  }
 }
